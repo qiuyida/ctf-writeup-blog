@@ -1100,7 +1100,7 @@ session["user_id"] = final_user.id  # ← 攻击者控制登录谁
 ---
 
 *生成时间: 2026-05-06*
-*博客地址: https://qiuyida.github.io/ctf-writeup-blog/*
+*博客地址: https://heliumsenbrg.github.io/ctf-writeup-blog/*
 `
   }
 }

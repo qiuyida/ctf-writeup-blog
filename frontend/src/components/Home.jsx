@@ -65,6 +65,7 @@ const CYBER_COLORS = {
 }
 
 const categories = [
+  { id: 'qingcen-web-2026-06-10', title: '青岑 CTF Web 入门', subtitle: '2026-06-10 | 17/20 题', icon: Flag, desc: 'HTML注释/Base64/隐藏字段/响应头/robots.txt/PHP弱类型', color: 'cyan' },
   { id: 'may-2026', title: 'CTF Writeup - May 2026', subtitle: 'ISCC/青岑/CTFShow', icon: Flag, desc: 'ISCC JWT伪造 + 青岑120题全通关 + CTFShow基础', color: 'cyan' },
   { id: 'tools', title: 'CTF Tools', subtitle: '工具使用指南', icon: Zap, desc: 'IDA, Burp Suite, GDB, Pwntools 等工具教程', color: 'purple' },
   { id: 'infoleak', title: 'Information Leakage', subtitle: '信息收集', icon: Shield, desc: 'HTML注释/响应头/备份文件/Cookie/JWT', color: 'cyan' },

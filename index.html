@@ -2,15 +2,78 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/ctf-writeup-blog/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>qiuyida | CTF Writeups</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-    <script type="module" crossorigin src="/ctf-writeup-blog/assets/index-tbxhsiwl.js"></script>
-    <link rel="stylesheet" crossorigin href="/ctf-writeup-blog/assets/index-DCxY9bG0.css">
+    <title>heliumsenbrg's CTF Writeups - Web/Crypto/Pwn 安全研究 | 青岑 CTF 38 题一血</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="CTF WriteUp 博客 - 记录 Web 安全、密码学、二进制利用的学习历程。包含 ISCC、青岑 CTF、CTFShow 等平台的 38 道题目详解，涵盖信息泄露、PHP 弱类型、命令注入、PWN 等方向。" />
+    <meta name="keywords" content="CTF, WriteUp, Web安全, 渗透测试, PHP弱类型, 命令注入, PWN, 逆向工程, 隐写术, ISCC, 青岑CTF, CTFShow" />
+    <meta name="author" content="heliumsenbrg" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://heliumsenbrg.github.io/ctf-writeup-blog/" />
+    <meta property="og:title" content="heliumsenbrg's CTF Writeups - Web/Crypto/Pwn 安全研究" />
+    <meta property="og:description" content="CTF WriteUp 博客 - 38 道题目详解，涵盖信息泄露、PHP 弱类型、命令注入、PWN 等方向。" />
+    <meta property="og:image" content="/favicon.svg" />
+    <meta property="og:locale" content="zh_CN" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://heliumsenbrg.github.io/ctf-writeup-blog/" />
+    <meta name="twitter:title" content="heliumsenbrg's CTF Writeups - Web/Crypto/Pwn 安全研究" />
+    <meta name="twitter:description" content="CTF WriteUp 博客 - 38 道题目详解，涵盖信息泄露、PHP 弱类型、命令注入、PWN 等方向。" />
+    <meta name="twitter:image" content="/favicon.svg" />
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://heliumsenbrg.github.io/ctf-writeup-blog/" />
+
+    <!-- RSS Feed -->
+    <link rel="alternate" type="application/rss+xml" title="heliumsenbrg's CTF Writeups" href="/rss.xml" />
+
+    <!-- 防止点击劫持 -->
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+
+    <!-- 防止 MIME 类型嗅探 -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+
+    <!-- Referrer 策略 -->
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
+    <!-- 禁用 DNS prefetch，保护隐私 -->
+    <meta http-equiv="x-dns-prefetch-control" content="off">
+
+    <!-- 禁用 IE 兼容模式 -->
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+
+    <!-- 主题色 -->
+    <meta name="theme-color" content="#0a0a0a" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <script type="module" crossorigin src="/ctf-writeup-blog/assets/index-DvfGttAS.js"></script>
+    <link rel="modulepreload" crossorigin href="/ctf-writeup-blog/assets/react-vendor-BfqUjiO_.js">
+    <link rel="modulepreload" crossorigin href="/ctf-writeup-blog/assets/tsparticles-DNPELOIV.js">
+    <link rel="modulepreload" crossorigin href="/ctf-writeup-blog/assets/framer-motion-C6HL7cyd.js">
+    <link rel="stylesheet" crossorigin href="/ctf-writeup-blog/assets/index-BswdIjOQ.css">
   </head>
-  <body class="bg-cyber-bg text-gray-200 font-mono">
+  <!-- 
+███████╗███████╗ ██████╗██████╗ ███████╗████████╗
+██╔════╝██╔════╝██╔════╝██╔══██╗██╔════╝╚══██╔══╝
+███████╗█████╗  ██║     ██████╔╝█████╗     ██║   
+╚════██║██╔══╝  ██║     ██╔══██╗██╔══╝     ██║   
+███████║███████╗╚██████╗██║  ██║███████╗   ██║   
+╚══════╝╚══════╝ ╚═════╝╚═╝  ╚═╝╚══════╝   ╚═╝   
+    
+    🕵️ 你发现了隐藏的线索...
+    试试在地址栏输入 /secret-quest
+    
+    Hint: 密钥就藏在这个页面的某个角落里...
+    "在看不见的地方，藏着打开秘密的钥匙"
+  -->
+  <body class="bg-cyber-darker text-cyber-cyan font-mono">
     <div id="root"></div>
   </body>
 </html>

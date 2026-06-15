@@ -21,7 +21,8 @@ const categoryNames = {
   infoleak: { name: '信息收集与泄露', color: 'cyan' },
   php: { name: 'PHP 弱类型', color: 'purple' },
   cmd: { name: '命令注入', color: 'pink' },
-  pwn: { name: 'PWN 与逆向', color: 'blue' }
+  pwn: { name: 'PWN 与逆向', color: 'blue' },
+  web: { name: 'Web 练习', color: 'cyan' }
 }
 
 // 难度等级 - 基于分数
