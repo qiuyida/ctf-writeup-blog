@@ -5,6 +5,7 @@ export default function ReadingProgress() {
 
   useEffect(() => {
     const onScroll = () => {
+      if (typeof window === 'undefined') return
       const scrollTop = window.scrollY
       const docHeight = document.documentElement.scrollHeight - window.innerHeight
       setProgress(docHeight > 0 ? Math.min(100, (scrollTop / docHeight) * 100) : 0)
@@ -14,15 +15,11 @@ export default function ReadingProgress() {
   }, [])
 
   return (
-    <div style={{
-      position: 'fixed', top: 0, left: 0, width: '100%', height: 3, zIndex: 1001,
-      background: 'transparent',
-    }}>
-      <div style={{
-        height: '100%', width: `${progress}%`,
-        background: 'linear-gradient(90deg, #00d4ff, #a855f7)',
-        transition: 'width 0.1s',
-      }} />
+    <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-transparent">
+      <div
+        className="h-full bg-cyber-cyan"
+        style={{ width: `${progress}%`, transition: 'width 100ms linear' }}
+      />
     </div>
   )
 }

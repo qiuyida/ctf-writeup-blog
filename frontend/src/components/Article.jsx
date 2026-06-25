@@ -801,6 +801,42 @@ key2.txt 的内容是："法治敬业法治敬业公正自由法治和谐"
 4. 零宽隐写不要只用 2 种字符，标准库用的是 4 种 × 2 bits
 `
   },
+  "re-plzdebugme": {
+    title: "[re] plzdebugme — 调试优先",
+    subtitle: "Linux ELF RE · 层层解密 · GDB break on x0r()",
+    content: `
+题目给了一个 Linux x64 ELF，名字就是 "plz debug me"。题目提示直接 break 在 \`x0r()\` 上，整体思路：输入 → RC4 → AES-128-ECB → BTEA → \`x0r()\` → 与 BSS 中的 flag 比较。
+
+## 关键线索
+- 提示里明确写了：**break on x0r()**
+- 二进制里同一套解密流程会对两个缓冲区做对称处理：一个是输出到 \`flag\` 数组，另一个是 BSS 中的 \`flag\` 比较缓冲区。
+
+## GDB 调试
+
+在 Kali 里直接执行：
+\`\`\`bash
+gdb -batch -x plzdb.gdb ./plzdebugme
+\`\`\`
+
+plzdb.gdb 内容：
+\`\`\`
+break x0r
+run
+finish
+x/32gb &flag
+x/s &flag
+continue
+\`\`\`
+
+## Flag
+\`\`\`
+flag{It3_D3bugG_T11me!_le3_play}
+\`\`\`
+
+## 经验总结
+这题想强调的一条非常朴素：题目已经给出极强的操作提示时，不要硬刚纯静态，直接断点是最快的路。尤其是这种多层嵌套逆变结构，硬推一旦某个常量看错，后面的验证就全错。
+`
+  },
   misc: {
     title: '杂项与综合',
     subtitle: 'Miscellaneous',
@@ -1557,7 +1593,7 @@ function Paragraph({ children }) {
 }
 
 // 文章顺序 - 用于上一篇/下一篇导航
-const articleOrder = ['tools', 'infoleak', 'php', 'cmd', 'pwn', 'stego', 'misc', 'may-2026']
+const articleOrder = ['tools', 'infoleak', 'php', 'cmd', 'pwn', 'stego', 'misc', 'may-2026', 're-plzdebugme']
 
 // 计算阅读时间（基于字数）
 function estimateReadingTime(content) {

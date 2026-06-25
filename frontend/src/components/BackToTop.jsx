@@ -1,29 +1,22 @@
 import { useState, useEffect } from 'react'
+import { ArrowUp } from 'lucide-react'
 
 export default function BackToTop() {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    const onScroll = () => setVisible(window.scrollY > 300)
+    const onScroll = () => setVisible(window.scrollY > 400)
     window.addEventListener('scroll', onScroll)
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
   if (!visible) return null
-
   return (
     <button
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-      style={{
-        position: 'fixed', bottom: 30, right: 30, zIndex: 999,
-        width: 44, height: 44, borderRadius: '50%',
-        background: 'rgba(0,212,255,0.2)', border: '1px solid rgba(0,212,255,0.4)',
-        color: '#00d4ff', fontSize: 20, cursor: 'pointer',
-        backdropFilter: 'blur(8px)',
-      }}
-      title="回到顶部"
+      className="fixed bottom-6 right-6 z-50 p-3 rounded-full border border-cyber-cyan/60 bg-black/60 text-cyber-cyan hover:bg-cyber-cyan/10 transition-colors"
     >
-      ↑
+      <ArrowUp className="w-4 h-4" />
     </button>
   )
 }
