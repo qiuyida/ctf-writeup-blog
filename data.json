@@ -947,11 +947,27 @@
       "category_name": "Misc",
       "category_icon": "🧩",
       "category_color": "#ffd700"
+    },
+    {
+      "id": 909,
+      "title": "NewStar CTF 2025 — 不是所有牛奶都叫___",
+      "slug": "newstar-not-all-milk",
+      "category_id": 4,
+      "platform": "NewStar CTF",
+      "difficulty": "Medium",
+      "tags": "[\"TLS\",\"Wireshark\",\"流量分析\",\"QR码\",\"SSL-key-log\"]",
+      "description": "TLS 流量解密 — 找到SSL key log解密流量，从HTTP流中提取base64二维码获取flag",
+      "solved": 1,
+      "created_at": "2026-07-17",
+      "content": "# NewStar CTF 2025 — 不是所有牛奶都叫___\n\n## 题目信息\n\n- **平台**: NewStar CTF 2025 Extras\n- **类型**: Misc / 流量分析\n- **考点**: TLS 流量解密、SSL key log、Wireshark\n\n## 题目分析\n\n题目名引用了经典广告语「不是所有牛奶都叫特仑苏」，空白处应填 **TLS**（特仑苏 → Telunsu → TLS）。核心考点是 TLS 流量解密。\n\n打开 pcap 流量文件，除了常见的 TCP 协议外，还能看到 TLSv1.3 协议。后半段开始出现 HTTP 流量，但其中混杂了大量用于混淆的垃圾 FLAG 信息。\n\n## 解题步骤\n\n### Step 1: 找到 SSL key log\n\n在 HTTP 下载的文件中逐一筛查，找到文件名明显区别于其他噪声文件的 key log。\n\n追踪该 HTTP 流，获取 TLS secrets log file 的内容。内容格式类似：\n\n```\nCLIENT_RANDOM <64位hex> <48位hex>\n```\n\n将内容中的 `\\n` 转为真实换行，去掉末尾多余换行，保存为 `.log` 文件。\n\n### Step 2: Wireshark 配置 TLS 解密\n\n`编辑 → 首选项 → Protocols → TLS → (Pre)-Master-Secret log filename`\n\n选择处理好的 `.log` 文件，点击确认。\n\n原本大量只显示 TLSv1.3 协议的流量，解密后出现了新的 HTTP 协议流量。\n\n### Step 3: 过滤 HTTP 流量，提取 base64\n\n重新过滤 `http`，看到大量 POST 请求，其中混有噪声。请求方式大量都是 POST，少量 GET 的请求看到回复都是 file server ready，这些只是确认连接的无用信息。\n\n在第 50 个流中找到了不一样的内容 —— 一个图片的 base64 编码形式：\n\n```\nPOST /upload HTTP/1.1\nContent-Type: application/octet-stream\n\niVBORw0KGgo...(base64 图片数据)...\n```\n\n### Step 4: CyberChef 解码\n\n将 base64 数据复制到 CyberChef，选择 \"From Base64\" 并下载为 PNG 文件。\n\n### Step 5: 扫码得 FLAG\n\n下载的 PNG 是一个 QR 码，扫码即可得到 flag：\n\n```\nflag{W0w_You_r3al1y_knOW_TL5&QrCode}\n```\n\n根据题目提示「FLAG 提交时去掉 & 符号」，实际提交：\n\n```\nflag{W0w_You_r3al1y_knOW_TL5QrCode}\n```\n\n## Flag\n\n```\nflag{W0w_You_r3al1y_knOW_TL5QrCode}\n```\n\n## 知识点\n\n- **TLS 解密**：需要通信双方密钥或 SSL key log 文件\n- **SSL key log**：格式为 `CLIENT_RANDOM <random> <secret>`，Wireshark 可直接使用\n- **流量噪声**：CTF 中常混入大量垃圾数据来混淆视听，需要耐心筛选和审计\n- **Base64 → 文件**：CyberChef 的 From Base64 可以直接导出二进制文件\n\n## 踩坑\n\n1. 一开始没注意到题目名暗示 TLS，在流量里瞎找\n2. 混淆的 FLAG 变式太多，差点被误导\n3. SSL key log 格式中的 `\\n` 需要转成真实换行才能被 Wireshark 识别\n4. HTTP 流中大量 POST 请求都是垃圾信息，需要仔细遍历每个流\n\n## TLS 流量分析速查\n\n| 步骤 | 操作 |\n|------|------|\n| 1. 审计流量 | 先看有哪些协议，找异常 |\n| 2. 找 key log | 搜索 SSLKEYLOG、CLIENT_RANDOM 等关键词 |\n| 3. 配置 Wireshark | 编辑→首选项→Protocols→TLS→选 log 文件 |\n| 4. 重新过滤 | 解密后过滤 http 查看新出现的流量 |\n| 5. 逐流遍历 | POST 内容可能包含图片/文件等隐藏信息 |\n\n---\n*WriteUp by heliumsenbrg, 2026-07-17*",
+      "category_name": "Misc",
+      "category_icon": "🧩",
+      "category_color": "#ffd700"
     }
   ],
   "stats": {
-    "total": 70,
-    "solved": 69,
+    "total": 71,
+    "solved": 70,
     "categories": 11,
     "firstBlood": 4
   }

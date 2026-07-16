@@ -1510,5 +1510,44 @@ def sign(params, secret):
 `
   },
 
+  notallmilk: {
+    title: 'NewStar 2025 — 不是所有牛奶都叫___',
+    subtitle: 'TLS 流量解密 + QR码提取',
+    icon: 'Key',
+    color: 'amber',
+    content: `
+# NewStar CTF 2025 Extras — 不是所有牛奶都叫___
+
+**类型**: Misc / 流量分析 | **难度**: Medium | **平台**: NewStar CTF
+
+## 考点
+
+TLS 流量解密、SSL key log、Wireshark 配置、QR码
+
+## 解题流程
+
+1. **审题**：题目名「不是所有牛奶都叫___」暗示 TLS（特仑苏 → TLS）
+2. **找 key log**：在 HTTP 流量中筛查，找到区别于噪声文件的 SSL key log
+3. **Wireshark 解密**：首选项 → Protocols → TLS → 加载 (Pre)-Master-Secret log
+4. **过滤 HTTP**：解密后重新过滤 http，大量 POST 中在第 50 个流找到 base64 图片
+5. **CyberChef**：From Base64 → 下载 PNG → 扫码得 flag
+
+## Flag
+
+\`\`\`
+flag{W0w_You_r3al1y_knOW_TL5QrCode}
+\`\`\`
+
+> 原始扫码结果包含 \`&\`（TL5&QrCode），题目提示提交时去掉 & 符号。
+
+## 关键教训
+
+- 题目名往往就是第一个 hint（TLS 缩写）
+- CTF 流量题中大量噪声是常态，耐心审计
+- SSL key log 的 \\\\n 需要转成真实换行符才能被 Wireshark 识别
+- CyberChef From Base64 可以直接导出任意二进制文件
+`
+  },
+
 
 }
