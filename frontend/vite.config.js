@@ -1,10 +1,20 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { copyFileSync, writeFileSync } from 'fs'
 
 export default defineConfig({
   // 环境感知：GitHub Pages 需要子路径，Vercel 根路径
   base: process.env.VERCEL ? '/' : '/ctf-writeup-blog/',
-  plugins: [react()],
+  plugins: [
+    react(),
+    {
+      name: 'spa-fallback',
+      closeBundle() {
+        copyFileSync('dist/index.html', 'dist/404.html')
+        writeFileSync('dist/.nojekyll', '')
+      }
+    }
+  ],
   server: {
     host: '0.0.0.0',
     port: 3000,
