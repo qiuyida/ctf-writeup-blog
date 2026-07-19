@@ -29,5 +29,9 @@ export default defineConfig({
         }
       }
     }
-  }
+  },
+  // 排除 public/gargantua 中的 import map 文件，避免 Vite 误扫描
+  optimizeDeps: {
+    entries: ['index.html', 'src/**/*.{js,jsx}'],
+  },
 })
