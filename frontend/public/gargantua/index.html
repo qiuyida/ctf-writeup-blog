@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>GARGANTUA — Schwarzschild Black Hole Raytracer</title>
+<meta name="description" content="实时 Schwarzschild 零测地线光线追踪黑洞 — 原生 WebGL2 Fragment Shader">
+<link rel="stylesheet" href="css/style.css">
+<script>
+/* 早期错误收集（自动化测试钩子，须在模块加载前安装） */
+window.__GARG_ERRORS = [];
+window.__GARG_READY = false;
+window.__SHOT_READY = false;
+(function () {
+  function push(msg) {
+    window.__GARG_ERRORS.push(String(msg));
+    var el = document.getElementById('errlog');
+    if (el) el.textContent = window.__GARG_ERRORS.join('\n');
+  }
+  window.addEventListener('error', function (e) {
+    push((e.message || 'error') + ' @ ' + (e.filename || '') + ':' + (e.lineno || 0));
+  });
+  window.addEventListener('unhandledrejection', function (e) {
+    push('unhandledrejection: ' + (e.reason && (e.reason.stack || e.reason.message) || e.reason));
+  });
+  var origErr = console.error.bind(console);
+  console.error = function () {
+    try { push('console.error: ' + Array.prototype.map.call(arguments, String).join(' ')); } catch (_) {}
+    origErr.apply(null, arguments);
+  };
+})();
+</script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "./vendor/three.module.js",
+    "three/addons/": "./vendor/addons/"
+  }
+}
+</script>
+</head>
+<body>
+<canvas id="gl"></canvas>
+
+<!-- 自动化测试可读的错误日志（不可见） -->
+<pre id="errlog" aria-hidden="true"></pre>
+
+<!-- 加载/错误遮罩 -->
+<div id="overlay" class="overlay">
+  <div class="overlay-card">
+    <div class="overlay-title">GARGANTUA</div>
+    <div class="overlay-sub" id="overlay-msg">正在初始化 WebGL2 积分器 …</div>
+    <div class="overlay-bar"><div id="overlay-progress"></div></div>
+  </div>
+</div>
+
+<!-- 顶部 HUD -->
+<header id="hud-top" class="hud">
+  <div class="hud-left">
+    <div class="title">GARGANTUA</div>
+    <div class="subtitle">Schwarzschild Black Hole Raytracer</div>
+  </div>
+  <div class="hud-right" id="stats">
+    <span id="stat-fps">-- FPS</span>
+    <span id="stat-res">--</span>
+    <span id="stat-steps">--</span>
+    <span id="stat-quality">--</span>
+  </div>
+</header>
+
+<!-- 视角预设（左上） -->
+<nav id="views" class="hud">
+  <button data-view="edge"  class="view-btn" title="F1">侧视边缘</button>
+  <button data-view="top"   class="view-btn" title="F2">俯视</button>
+  <button data-view="close" class="view-btn" title="F3">光子环</button>
+  <button data-view="wide"  class="view-btn" title="F4">远景</button>
+  <button id="btn-cine" class="view-btn accent" title="Space">电影镜头</button>
+</nav>
+
+<!-- 质量档（左下） -->
+<div id="quality" class="hud">
+  <button data-quality="standard"  class="q-btn">Standard</button>
+  <button data-quality="high"      class="q-btn">High</button>
+  <button data-quality="cinematic" class="q-btn">Cinematic</button>
+</div>
+
+<!-- 调试视图指示 -->
+<div id="debug-badge" class="hud hidden">调试视图 <b id="debug-name">最终渲染</b> <span class="dim">(0 返回)</span></div>
+
+<!-- 参数面板 -->
+<aside id="panel" class="hud">
+  <div class="panel-head">
+    <span>参数 <span class="dim">21</span></span>
+    <div>
+      <button id="btn-reset" class="mini-btn" title="R">重置</button>
+      <button id="btn-panel-close" class="mini-btn" title="U">×</button>
+    </div>
+  </div>
+  <div id="panel-body"></div>
+</aside>
+
+<!-- 底部快捷键提示 -->
+<footer id="hud-bottom" class="hud">
+  <span><b>Space</b> 电影镜头</span>
+  <span><b>F1–F4</b> 视角</span>
+  <span><b>0–9</b> 调试视图</span>
+  <span><b>U</b> 参数</span>
+  <span><b>L</b> 质量</span>
+  <span><b>M</b> 音乐</span>
+  <span><b>P</b> 截图</span>
+  <span><b>H</b> HUD</span>
+</footer>
+
+<!-- 音乐开关按钮 -->
+<button id="btn-music" class="hud fab" title="M">♪</button>
+<button id="btn-panel-open" class="hud fab hidden" title="U">⚙</button>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

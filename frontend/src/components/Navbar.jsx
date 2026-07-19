@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Terminal, Flag, BookOpen, ExternalLink, Menu, X, User } from 'lucide-react'
+import { Terminal, Flag, BookOpen, ExternalLink, Menu, X, User, Circle } from 'lucide-react'
+
+const GARGANTUA_URL = `${import.meta.env.BASE_URL}gargantua/index.html`
 
 export default function Navbar() {
   const location = useLocation()
@@ -47,6 +49,15 @@ export default function Navbar() {
               About
             </NavLink>
             <a
+              href={GARGANTUA_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="nav-link flex items-center"
+            >
+              <Circle className="w-4 h-4 mr-2" />
+              Gargantua
+            </a>
+            <a
               href="https://github.com"
               target="_blank"
               rel="noopener noreferrer"
@@ -69,7 +80,7 @@ export default function Navbar() {
 
         {/* Mobile menu */}
         <div className={`sm:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-          mobileOpen ? 'max-h-64 mt-3' : 'max-h-0'
+          mobileOpen ? 'max-h-80 mt-3' : 'max-h-0'
         }`}>
           <div className="flex flex-col gap-1 pb-2">
             <Link
@@ -108,6 +119,15 @@ export default function Navbar() {
               <User className="w-4 h-4" />
               About
             </Link>
+            <a
+              href={GARGANTUA_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-mono text-cyber-grid hover:text-cyber-cyan hover:bg-cyber-cyan/5 transition-all"
+            >
+              <Circle className="w-4 h-4" />
+              Gargantua
+            </a>
             <a
               href="https://github.com"
               target="_blank"
