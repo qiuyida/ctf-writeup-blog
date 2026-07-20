@@ -22,7 +22,12 @@ const categoryNames = {
   php: { name: 'PHP 弱类型', color: 'purple' },
   cmd: { name: '命令注入', color: 'pink' },
   pwn: { name: 'PWN 与逆向', color: 'blue' },
-  web: { name: 'Web 练习', color: 'cyan' }
+  web: { name: 'Web 练习', color: 'cyan' },
+  reverse: { name: '逆向工程', color: 'purple' },
+  crypto: { name: '密码学', color: 'pink' },
+  stego: { name: '隐写术', color: 'cyan' },
+  misc: { name: '杂项', color: 'blue' },
+  tools: { name: '工具', color: 'cyan' },
 }
 
 // 难度等级 - 基于分数
